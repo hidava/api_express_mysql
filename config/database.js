@@ -9,7 +9,7 @@ const mysql = require('mysql2/promise');
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost', // O la IP/URL de tu servidor MySQL
     user: process.env.DB_USER || 'root',      // Tu usuario de MySQL
-    password: process.env.DB_PASS || '',      // Contraseña de MySQL (poner en .env en producción)
+    password: process.env.DB_PASSWORD || process.env.DB_PASS || '',      // Contraseña de MySQL (poner en .env en producción)
     database: process.env.DB_NAME || 'usuarios_db', // Nombre de la base de datos
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
     waitForConnections: true,
@@ -17,7 +17,11 @@ const dbConfig = {
     queueLimit: 0,
     // Permite que MySQL devuelva valores booleanos y evita problemas con fechas y JSON
     dateStrings: true,
-    namedPlaceholders: true
+    namedPlaceholders: true,
+    // Configuración SSL para DigitalOcean (requiere conexión segura)
+    ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false // DigitalOcean maneja los certificados
+    } : false
 };
 
 let dbPool = null;
