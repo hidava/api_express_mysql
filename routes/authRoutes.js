@@ -17,6 +17,24 @@ const {
 // Importa tu middleware de autenticación.
 const { authenticateToken } = require('../middleware/auth'); 
 
+// ------------------- Ruta Base -------------------
+
+// GET /api/v1/auth - Información sobre las rutas de autenticación
+router.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Módulo de Autenticación',
+        endpoints: {
+            'POST /register': 'Registrar nuevo usuario',
+            'POST /login': 'Iniciar sesión',
+            'POST /logout': 'Cerrar sesión',
+            'POST /verify-token': 'Verificar token (requiere autenticación)',
+            'GET /me': 'Obtener perfil del usuario autenticado',
+            'PUT /me': 'Actualizar perfil del usuario autenticado'
+        }
+    });
+});
+
 // ------------------- Rutas Públicas -------------------
 
 // POST /api/v1/auth/register - Crear un nuevo usuario y propietario (TRANSACCIÓN)

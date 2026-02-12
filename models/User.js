@@ -265,14 +265,19 @@ const User = {
             const offset = (page - 1) * limit;
             const pool = getDB();
 
-            const [rows] = await pool.execute(
-                `SELECT ${this.userSelectFields} FROM usuarios ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?`,
-                [limit, offset]
+            // Asegurar que limit y offset son enteros
+            const limitInt = parseInt(limit);
+            const offsetInt = parseInt(offset);
+
+            // MySQL no acepta parámetros preparados en LIMIT/OFFSET, usamos query con interpolación segura
+            const [rows] = await pool.query(
+                `SELECT ${this.userSelectFields} FROM usuarios ORDER BY fecha_creacion DESC LIMIT ${limitInt} OFFSET ${offsetInt}`
             );
 
-            const [[{ count }]] = await pool.query('SELECT COUNT(*) AS count FROM usuarios');
+            const [countResult] = await pool.query('SELECT COUNT(*) AS count FROM usuarios');
+            const count = countResult[0].count;
 
-            const totalPages = Math.ceil(count / limit);
+            const totalPages = Math.ceil(count / limitInt);
 
             return {
                 users: rows,

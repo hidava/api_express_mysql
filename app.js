@@ -183,8 +183,9 @@ apiRouter.get('/', (req, res) => {
 // 2. Montar sub-routers dentro del apiRouter
 apiRouter.use('/users', userRoutes);
 apiRouter.use('/auth', authRoutes);
-apiRouter.use('/propietarios', require('./routes/propietariosRoutes'));
-apiRouter.use('/pacientes', require('./routes/pacientesRoutes'));
+// Comentado temporalmente hasta que se implementen correctamente
+// apiRouter.use('/propietarios', require('./routes/propietariosRoutes'));
+// apiRouter.use('/pacientes', require('./routes/pacientesRoutes'));
 
 
 // 3. Montar el apiRouter en el prefijo principal
