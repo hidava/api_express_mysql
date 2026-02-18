@@ -13,4 +13,11 @@ router.post('/',
   pacienteController.createPaciente
 );
 
+router.post('/check',
+  body('nombre').exists().withMessage('nombre es requerido'),
+  body('propietarios_cedula').exists().withMessage('propietarios_cedula es requerido'),
+  handleValidationErrors,
+  pacienteController.checkPaciente
+);
+
 module.exports = router;

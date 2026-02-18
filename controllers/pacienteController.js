@@ -1,5 +1,6 @@
 const Paciente = require('../models/Paciente');
 const Propietario = require('../models/Propietario');
+const { getDB } = require('../config/database');
 
 exports.createPaciente = async (req, res) => {
   try {
@@ -20,5 +21,25 @@ exports.createPaciente = async (req, res) => {
   } catch (error) {
     console.error('Error en createPaciente:', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: 'Error en el servidor al crear paciente' });
+  }
+};
+
+exports.checkPaciente = async (req, res) => {
+  try {
+    const { nombre, propietarios_cedula } = req.body || {};
+    if (!nombre || !propietarios_cedula) {
+      return res.status(400).json({ success: false, message: 'nombre y propietarios_cedula son requeridos' });
+    }
+
+    const pool = getDB();
+    const [rows] = await pool.execute(
+      'SELECT id_mascota FROM pacientes WHERE LOWER(TRIM(nombre)) = LOWER(TRIM(?)) AND propietarios_cedula = ? LIMIT 1',
+      [nombre.trim(), propietarios_cedula]
+    );
+
+    return res.status(200).json({ exists: rows.length > 0 });
+  } catch (error) {
+    console.error('Error en checkPaciente:', { message: error.message, stack: error.stack });
+    return res.status(500).json({ success: false, message: 'Error en el servidor al verificar paciente' });
   }
 };

@@ -41,6 +41,8 @@ const {
 // Importar rutas
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const propietariosRoutes = require('./routes/propietariosRoutes');
+const pacientesRoutes = require('./routes/pacientesRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -174,7 +176,9 @@ apiRouter.get('/', (req, res) => {
         message: 'Bienvenido a la API v1.0',
         availableModules: {
             auth: `/auth`,
-            users: `/users`
+            users: `/users`,
+            propietarios: `/propietarios`,
+            pacientes: `/pacientes`
         },
         documentation: '/docs'
     });
@@ -183,9 +187,8 @@ apiRouter.get('/', (req, res) => {
 // 2. Montar sub-routers dentro del apiRouter
 apiRouter.use('/users', userRoutes);
 apiRouter.use('/auth', authRoutes);
-// Comentado temporalmente hasta que se implementen correctamente
-// apiRouter.use('/propietarios', require('./routes/propietariosRoutes'));
-// apiRouter.use('/pacientes', require('./routes/pacientesRoutes'));
+apiRouter.use('/propietarios', propietariosRoutes);
+apiRouter.use('/pacientes', pacientesRoutes);
 
 
 // 3. Montar el apiRouter en el prefijo principal
