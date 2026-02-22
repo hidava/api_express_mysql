@@ -4,6 +4,11 @@ const pacienteController = require('../controllers/pacienteController');
 const { body } = require('express-validator');
 const { handleValidationErrors } = require('../middleware/validation');
 
+// GET /api/v1/pacientes/list - Listar todos los pacientes
+router.get('/list',
+  pacienteController.getAllPacientes
+);
+
 router.post('/',
   body('nombreMascota').exists().withMessage('nombreMascota es requerido'),
   body('especie').exists().withMessage('especie es requerido'),

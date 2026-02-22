@@ -43,3 +43,19 @@ exports.checkPaciente = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error en el servidor al verificar paciente' });
   }
 };
+
+exports.getAllPacientes = async (req, res) => {
+  try {
+    const pool = getDB();
+    const [rows] = await pool.execute(
+      `SELECT id_mascota AS id, nombre, especie, raza, edad, peso, altura, propietarios_cedula, fecha_creacion
+       FROM pacientes
+       ORDER BY nombre ASC`
+    );
+
+    return res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en getAllPacientes:', { message: error.message, stack: error.stack });
+    return res.status(500).json({ success: false, message: 'Error en el servidor al obtener pacientes' });
+  }
+};

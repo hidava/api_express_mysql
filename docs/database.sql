@@ -69,8 +69,8 @@ INSERT INTO usuarios (email, password, propietarios_cedula) VALUES
 -- Tabla pacientes (opcional): mascotas asociadas a un propietario
 DROP TABLE IF EXISTS pacientes;
 CREATE TABLE pacientes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombreMascota VARCHAR(150) NOT NULL,
+    id_mascota INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
     especie VARCHAR(50) NOT NULL,
     raza VARCHAR(100) NOT NULL,
     edad INT DEFAULT NULL,
@@ -79,6 +79,28 @@ CREATE TABLE pacientes (
     propietarios_cedula VARCHAR(50) NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_paciente_propietario FOREIGN KEY (propietarios_cedula) REFERENCES propietarios(cedula) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ===================================================================
+-- TABLA: historial_medico
+-- ===================================================================
+-- Descripción: Historial médico de los pacientes (mascotas)
+-- ===================================================================
+
+DROP TABLE IF EXISTS historial_medico;
+CREATE TABLE historial_medico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    motivo_consulta TEXT NOT NULL,
+    diagnostico TEXT,
+    tratamiento TEXT,
+    imagen_url VARCHAR(500),
+    imagen_name VARCHAR(255),
+    pacientes_id_mascota INT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_historial_paciente FOREIGN KEY (pacientes_id_mascota) REFERENCES pacientes(id_mascota) ON DELETE CASCADE,
+    INDEX idx_paciente (pacientes_id_mascota),
+    INDEX idx_fecha_creacion (fecha_creacion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================================================
