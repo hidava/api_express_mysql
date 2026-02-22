@@ -328,10 +328,18 @@ const initializeApp = async () => {
     }
 };
 
-// Inicializar aplicación solo si este archivo se ejecuta directamente
-if (require.main === module) {
+// Inicializar aplicación
+// En Vercel (serverless): no llamar a app.listen(), solo exportar app
+// En local: llamar a app.listen()
+if (process.env.VERCEL) {
+    // En Vercel: solo exportar sin iniciar listener
+    console.log('✅ App se ejecuta como serverless en Vercel');
+    module.exports = app;
+} else if (require.main === module) {
+    // En local o ejecución directa: iniciar servidor
     initializeApp();
+    module.exports = app;
+} else {
+    // En otros casos (importación): solo exportar
+    module.exports = app;
 }
-
-// Exportar app para pruebas
-module.exports = app;
