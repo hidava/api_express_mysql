@@ -9,6 +9,25 @@ const { body, param, query } = require('express-validator');
 const { handleValidationErrors } = require('../middleware/validation');
 
 /**
+ * @route   GET /api/v1/historial-medico
+ * @desc    Obtener todos los historiales médicos
+ * @query   ?vista=true (opcional): devuelve vista completa con propietarios
+ * @query   ?paciente_id=N (opcional): filtra por paciente
+ * @query   ?historial_id=N (opcional): obtiene un historial específico
+ * @access  Public
+ */
+router.get(
+  '/',
+  [
+    query('vista').optional().isString(),
+    query('paciente_id').optional().isInt({ min: 1 }).withMessage('El ID del paciente debe ser un número válido'),
+    query('historial_id').optional().isInt({ min: 1 }).withMessage('El ID del historial debe ser un número válido'),
+    handleValidationErrors
+  ],
+  historialMedicoController.getAllHistoriales
+);
+
+/**
  * @route   POST /api/v1/historial-medico
  * @desc    Crear un nuevo registro de historial médico
  * @access  Public (agregar autenticación si es necesario)
@@ -30,48 +49,9 @@ router.post(
     body('tratamiento')
       .optional()
       .isString().withMessage('El tratamiento debe ser texto'),
-    body('imagen_url')
-      .optional()
-      .isString().withMessage('La URL de imagen debe ser texto'),
-    body('imagen_name')
-      .optional()
-      .isString().withMessage('El nombre de imagen debe ser texto'),
     handleValidationErrors
   ],
   historialMedicoController.createHistorial
-);
-
-/**
- * @route   GET /api/v1/historial-medico
- * @desc    Obtener todos los historiales médicos
- * @query   ?vista=true (opcional): devuelve vista completa con propietarios
- * @query   ?paciente_id=N (opcional): filtra por paciente
- * @query   ?historial_id=N (opcional): obtiene un historial específico
- * @access  Public
- */
-router.get(
-  '/',
-  [
-    query('vista').optional().isString(),
-    query('paciente_id').optional().isInt({ min: 1 }).withMessage('El ID del paciente debe ser un número válido'),
-    query('historial_id').optional().isInt({ min: 1 }).withMessage('El ID del historial debe ser un número válido'),
-    handleValidationErrors
-  ],
-  historialMedicoController.getAllHistoriales
-);
-
-/**
- * @route   GET /api/v1/historial-medico/:id
- * @desc    Obtener un historial médico por ID
- * @access  Public
- */
-router.get(
-  '/:id',
-  [
-    param('id').isInt({ min: 1 }).withMessage('El ID debe ser un número válido'),
-    handleValidationErrors
-  ],
-  historialMedicoController.getHistorialById
 );
 
 /**
@@ -86,6 +66,20 @@ router.get(
     handleValidationErrors
   ],
   historialMedicoController.getHistorialesByPaciente
+);
+
+/**
+ * @route   GET /api/v1/historial-medico/:id
+ * @desc    Obtener un historial médico por ID
+ * @access  Public
+ */
+router.get(
+  '/:id',
+  [
+    param('id').isInt({ min: 1 }).withMessage('El ID debe ser un número válido'),
+    handleValidationErrors
+  ],
+  historialMedicoController.getHistorialById
 );
 
 /**
@@ -108,12 +102,6 @@ router.put(
     body('tratamiento')
       .optional()
       .isString().withMessage('El tratamiento debe ser texto'),
-    body('imagen_url')
-      .optional()
-      .isString().withMessage('La URL de imagen debe ser texto'),
-    body('imagen_name')
-      .optional()
-      .isString().withMessage('El nombre de imagen debe ser texto'),
     handleValidationErrors
   ],
   historialMedicoController.updateHistorial

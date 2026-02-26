@@ -15,10 +15,15 @@ exports.createHistorial = async (req, res) => {
       motivo_consulta,
       diagnostico,
       tratamiento,
-      pacientes_id_mascota,
-      imagen_url,
-      imagen_name
+      pacientes_id_mascota
     } = req.body;
+
+    console.log('createHistorial received:', {
+      motivo_consulta,
+      diagnostico,
+      tratamiento,
+      pacientes_id_mascota
+    });
 
     // Validaciones
     if (!motivo_consulta || motivo_consulta.trim() === '') {
@@ -42,6 +47,8 @@ exports.createHistorial = async (req, res) => {
       [pacientes_id_mascota]
     );
 
+    console.log('Patient check result:', pacientes);
+
     if (pacientes.length === 0) {
       return res.status(404).json({
         success: false,
@@ -54,10 +61,10 @@ exports.createHistorial = async (req, res) => {
       motivo_consulta,
       diagnostico,
       tratamiento,
-      pacientes_id_mascota,
-      imagen_url,
-      imagen_name
+      pacientes_id_mascota
     });
+
+    console.log('Create result:', result);
 
     res.status(201).json({
       success: true,
@@ -67,11 +74,17 @@ exports.createHistorial = async (req, res) => {
   } catch (error) {
     console.error('Error en createHistorial:', {
       message: error.message,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      sql: error.sql,
       stack: error.stack
     });
     res.status(500).json({
       success: false,
-      message: 'Error en el servidor al crear el historial médico'
+      message: 'Error en el servidor al crear el historial médico',
+      error: error.sqlMessage || error.message
     });
   }
 };
@@ -241,9 +254,14 @@ exports.updateHistorial = async (req, res) => {
       imagen_name
     } = req.body;
 
+    console.log('[updateHistorial] Received params:', { id, body: req.body });
+
     // Verificar que el historial exista
     const historialExistente = await HistorialMedico.findById(id);
+    console.log('[updateHistorial] findById result:', historialExistente);
+    
     if (!historialExistente) {
+      console.log('[updateHistorial] NOT FOUND for id:', id);
       return res.status(404).json({
         success: false,
         message: 'Historial médico no encontrado'
@@ -266,6 +284,7 @@ exports.updateHistorial = async (req, res) => {
     }
 
     const result = await HistorialMedico.update(id, updateData);
+    console.log('[updateHistorial] update result:', result);
 
     // Obtener el historial actualizado
     const historialActualizado = await HistorialMedico.findById(id);

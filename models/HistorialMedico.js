@@ -14,22 +14,18 @@ const HistorialMedico = {
       motivo_consulta,
       diagnostico,
       tratamiento,
-      pacientes_id_mascota,
-      imagen_url,
-      imagen_name
+      pacientes_id_mascota
     } = data;
 
     try {
       const [result] = await executor.execute(
-        `INSERT INTO historial_medico (motivo_consulta, diagnostico, tratamiento, pacientes_id_mascota, imagen_url, imagen_name)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO historial_medico (motivo_consulta, diagnostico, tratamiento, pacientes_id_mascota)
+         VALUES (?, ?, ?, ?)`,
         [
           motivo_consulta,
           diagnostico || null,
           tratamiento || null,
-          pacientes_id_mascota,
-          imagen_url || null,
-          imagen_name || null
+          pacientes_id_mascota
         ]
       );
       return { insertId: result.insertId };
@@ -46,16 +42,15 @@ const HistorialMedico = {
     const executor = connection || getDB();
     try {
       const [rows] = await executor.execute(
-        `SELECT h.id, h.motivo_consulta, h.diagnostico, h.tratamiento, h.imagen_url, h.imagen_name, 
-                h.pacientes_id_mascota, p.nombre AS paciente_nombre
+        `SELECT h.id, p.nombre AS nombre_mascota, h.motivo_consulta, h.diagnostico, h.tratamiento 
          FROM historial_medico h
          LEFT JOIN pacientes p ON p.id_mascota = h.pacientes_id_mascota
          ORDER BY h.id DESC`
       );
-      return rows;
+      return rows || [];
     } catch (error) {
       console.error('Error en HistorialMedico.findAll:', { message: error.message, stack: error.stack });
-      throw error;
+      return [];
     }
   },
 
@@ -65,18 +60,19 @@ const HistorialMedico = {
   async findById(id, connection = null) {
     const executor = connection || getDB();
     try {
+      // Encontrar por id - usar la misma estructura que findAll pero filtrado
       const [rows] = await executor.execute(
-        `SELECT h.id, h.motivo_consulta, h.diagnostico, h.tratamiento, h.imagen_url, h.imagen_name,
-                h.pacientes_id_mascota, p.nombre AS paciente_nombre
+        `SELECT h.id, p.nombre AS nombre_mascota, h.motivo_consulta, h.diagnostico, h.tratamiento,
+                h.pacientes_id_mascota
          FROM historial_medico h
          LEFT JOIN pacientes p ON p.id_mascota = h.pacientes_id_mascota
          WHERE h.id = ?`,
         [id]
       );
-      return rows.length > 0 ? rows[0] : null;
+      return rows && rows.length > 0 ? rows[0] : null;
     } catch (error) {
-      console.error('Error en HistorialMedico.findById:', { message: error.message, stack: error.stack });
-      throw error;
+      console.error('Error en HistorialMedico.findById:', { id, message: error.message });
+      return null;
     }
   },
 
@@ -88,17 +84,17 @@ const HistorialMedico = {
     try {
       const [rows] = await executor.execute(
         `SELECT h.id, h.motivo_consulta, h.diagnostico, h.tratamiento, h.imagen_url, h.imagen_name,
-                h.pacientes_id_mascota, p.nombre AS paciente_nombre
+                h.pacientes_id_mascota, p.nombre AS paciente_nombre, p.especie, p.raza
          FROM historial_medico h
          LEFT JOIN pacientes p ON p.id_mascota = h.pacientes_id_mascota
          WHERE h.pacientes_id_mascota = ?
          ORDER BY h.id DESC`,
         [pacienteId]
       );
-      return rows;
+      return rows || [];
     } catch (error) {
       console.error('Error en HistorialMedico.findByPacienteId:', { message: error.message, stack: error.stack });
-      throw error;
+      return [];
     }
   },
 
@@ -154,9 +150,7 @@ const HistorialMedico = {
     const {
       motivo_consulta,
       diagnostico,
-      tratamiento,
-      imagen_url,
-      imagen_name
+      tratamiento
     } = data;
 
     const fields = [];
@@ -173,14 +167,6 @@ const HistorialMedico = {
     if (tratamiento !== undefined) {
       fields.push('tratamiento = ?');
       values.push(tratamiento);
-    }
-    if (imagen_url !== undefined) {
-      fields.push('imagen_url = ?');
-      values.push(imagen_url);
-    }
-    if (imagen_name !== undefined) {
-      fields.push('imagen_name = ?');
-      values.push(imagen_name);
     }
 
     if (fields.length === 0) {

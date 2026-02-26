@@ -48,3 +48,5 @@ coverage/
 
 # Archivos específicos del proyecto
 verificar-db.js
+.vercel
+.env*.local

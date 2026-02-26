@@ -48,7 +48,7 @@ exports.getAllPacientes = async (req, res) => {
   try {
     const pool = getDB();
     const [rows] = await pool.execute(
-      `SELECT id_mascota AS id, nombre, especie, raza, edad, peso, altura, propietarios_cedula, fecha_creacion
+      `SELECT id_mascota AS id, nombre, especie, raza, edad, peso, altura, propietarios_cedula
        FROM pacientes
        ORDER BY nombre ASC`
     );
