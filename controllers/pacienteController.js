@@ -59,3 +59,81 @@ exports.getAllPacientes = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error en el servidor al obtener pacientes' });
   }
 };
+
+/**
+ * GET /api/v1/pacientes/:id
+ * Obtiene un paciente por su ID
+ */
+exports.getPacienteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const paciente = await Paciente.findById(id);
+    
+    if (!paciente) {
+      return res.status(404).json({ success: false, message: 'Paciente no encontrado.' });
+    }
+    
+    return res.status(200).json({ success: true, data: paciente });
+  } catch (error) {
+    console.error('Error en getPacienteById:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener paciente.' });
+  }
+};
+
+/**
+ * GET /api/v1/pacientes/owner/:cedula
+ * Obtiene todos los pacientes de un propietario
+ */
+exports.getPacientesByOwner = async (req, res) => {
+  try {
+    const { cedula } = req.params;
+    const pacientes = await Paciente.findByOwner(cedula);
+    
+    return res.status(200).json({ success: true, data: pacientes });
+  } catch (error) {
+    console.error('Error en getPacientesByOwner:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener pacientes del propietario.' });
+  }
+};
+
+/**
+ * PUT /api/v1/pacientes/:id
+ * Actualiza un paciente
+ */
+exports.updatePaciente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, especie, raza, edad, peso, altura } = req.body;
+    
+    const paciente = await Paciente.update(id, { nombre, especie, raza, edad, peso, altura });
+    
+    if (!paciente) {
+      return res.status(404).json({ success: false, message: 'Paciente no encontrado.' });
+    }
+    
+    return res.status(200).json({ success: true, data: paciente, message: 'Paciente actualizado correctamente.' });
+  } catch (error) {
+    console.error('Error en updatePaciente:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar paciente.' });
+  }
+};
+
+/**
+ * DELETE /api/v1/pacientes/:id
+ * Elimina un paciente
+ */
+exports.deletePaciente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Paciente.delete(id);
+    
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Paciente no encontrado.' });
+    }
+    
+    return res.status(200).json({ success: true, message: 'Paciente eliminado correctamente.' });
+  } catch (error) {
+    console.error('Error en deletePaciente:', error);
+    res.status(500).json({ success: false, message: 'Error al eliminar paciente.' });
+  }
+};

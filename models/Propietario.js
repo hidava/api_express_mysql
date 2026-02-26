@@ -47,6 +47,23 @@ const Propietario = {
     },
     
     /**
+     * Obtiene todos los propietarios.
+     * @returns {Promise<Array>} Array de propietarios.
+     */
+    async findAll(connection = null) {
+        try {
+            const executor = connection || getDB();
+            const [rows] = await executor.execute(
+                'SELECT cedula, nombre, apellido, telefono, direccion FROM propietarios ORDER BY nombre ASC'
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error en Propietario.findAll:', error);
+            throw new Error('Error al obtener propietarios');
+        }
+    },
+
+    /**
      * Busca un propietario por cédula para obtener sus datos personales.
      * @param {string} cedula - Cédula/Identificación del propietario.
      * @param {mysql.PoolConnection} [connection] - Conexión opcional.
