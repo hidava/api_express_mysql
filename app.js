@@ -45,6 +45,7 @@ const propietariosRoutes = require('./routes/propietariosRoutes');
 const pacientesRoutes = require('./routes/pacientesRoutes');
 const historialMedicoRoutes = require('./routes/historialMedicoRoutes');
 const vacunacionRoutes = require('./routes/vacunacionRoutes');
+const desparacitacionRoutes = require('./routes/desparacitacionRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -176,14 +177,15 @@ apiRouter.get('/', (req, res) => {
     res.status(200).json({
         success: true,
         message: 'Bienvenido a la API v1.0',
-        version: '1.0.3',
+        version: '1.0.4',
         availableModules: {
             auth: `/auth`,
             users: `/users`,
             propietarios: `/propietarios`,
             pacientes: `/pacientes`,
             historialMedico: `/historial-medico`,
-            vacunacion: `/vacunacion`
+            vacunacion: `/vacunacion`,
+            desparacitacion: `/desparacitacion`
         },
         documentation: '/docs'
     });
@@ -196,6 +198,7 @@ apiRouter.use('/propietarios', propietariosRoutes);
 apiRouter.use('/pacientes', pacientesRoutes);
 apiRouter.use('/historial-medico', historialMedicoRoutes);
 apiRouter.use('/vacunacion', vacunacionRoutes);
+apiRouter.use('/desparacitacion', desparacitacionRoutes);
 
 
 // 3. Montar el apiRouter en el prefijo principal
