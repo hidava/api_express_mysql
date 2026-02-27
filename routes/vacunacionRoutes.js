@@ -31,7 +31,7 @@ router.post('/',
 // PUT /api/v1/vacunacion/:id - Actualizar vacunacion
 router.put('/:id',
   body('nombre_vacuna').optional().isLength({ min: 2 }).withMessage('nombre_vacuna inválido'),
-  body('fecha_aplicacion').optional().withMessage('fecha_aplicacion inválida'),
+  body('fecha_aplicacion').optional().isISO8601().withMessage('fecha_aplicacion inválida'),
   handleValidationErrors,
   vacunacionController.updateVacunacion
 );
