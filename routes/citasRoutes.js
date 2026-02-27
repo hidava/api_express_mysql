@@ -77,7 +77,7 @@ router.put('/:id',
     .matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/).withMessage('hora_cita debe tener formato HH:MM o HH:MM:SS'),
   body('estado')
     .optional()
-    .isIn(['pendiente', 'confirmada', 'cancelada', 'completada']).withMessage('estado debe ser: pendiente, confirmada, cancelada o completada'),
+    .isIn(['pendiente', 'confirmada', 'cancelada', 'completada', 'realizada']).withMessage('estado debe ser: pendiente, confirmada, cancelada, completada o realizada'),
   body('descripcion')
     .optional()
     .isLength({ min: 5 }).withMessage('descripcion debe tener al menos 5 caracteres'),

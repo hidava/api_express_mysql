@@ -223,15 +223,20 @@ const Cita = {
    * @param {string} hora - Hora en formato HH:MM:SS
    * @returns {Promise<number>} Número de citas
    */
-  async countByFechaHora(fecha, hora, connection = null) {
+  async countByFechaHora(fecha, hora, connection = null, excludeId = null) {
     try {
       const executor = connection || getDB();
-      const [rows] = await executor.execute(
-        `SELECT COUNT(*) as total
+      let query = `SELECT COUNT(*) as total
          FROM citas
-         WHERE fecha_cita = ? AND hora_cita = ? AND estado != 'cancelada'`,
-        [fecha, hora]
-      );
+         WHERE fecha_cita = ? AND hora_cita = ? AND estado != 'cancelada'`;
+      const params = [fecha, hora];
+
+      if (excludeId) {
+        query += ' AND id_cita != ?';
+        params.push(excludeId);
+      }
+
+      const [rows] = await executor.execute(query, params);
       return rows[0].total;
     } catch (error) {
       console.error('Error en Cita.countByFechaHora:', error);
@@ -244,18 +249,52 @@ const Cita = {
    * @param {string} fecha - Fecha en formato YYYY-MM-DD
    * @returns {Promise<number>} Número de citas
    */
-  async countByFecha(fecha, connection = null) {
+  async countByFecha(fecha, connection = null, excludeId = null) {
     try {
       const executor = connection || getDB();
-      const [rows] = await executor.execute(
-        `SELECT COUNT(*) as total
+      let query = `SELECT COUNT(*) as total
          FROM citas
-         WHERE fecha_cita = ? AND estado != 'cancelada'`,
-        [fecha]
-      );
+         WHERE fecha_cita = ? AND estado != 'cancelada'`;
+      const params = [fecha];
+
+      if (excludeId) {
+        query += ' AND id_cita != ?';
+        params.push(excludeId);
+      }
+
+      const [rows] = await executor.execute(query, params);
       return rows[0].total;
     } catch (error) {
       console.error('Error en Cita.countByFecha:', error);
+      throw error;
+    }
+  },
+
+  async existsDuplicate(data, connection = null, excludeId = null) {
+    try {
+      const executor = connection || getDB();
+      const { propietarios_cedula, pacientes_id_mascota, fecha_cita, hora_cita } = data;
+
+      let query = `SELECT id_cita
+         FROM citas
+         WHERE propietarios_cedula = ?
+           AND pacientes_id_mascota = ?
+           AND fecha_cita = ?
+           AND hora_cita = ?
+           AND estado != 'cancelada'`;
+      const params = [propietarios_cedula, pacientes_id_mascota, fecha_cita, hora_cita];
+
+      if (excludeId) {
+        query += ' AND id_cita != ?';
+        params.push(excludeId);
+      }
+
+      query += ' LIMIT 1';
+
+      const [rows] = await executor.execute(query, params);
+      return rows.length > 0;
+    } catch (error) {
+      console.error('Error en Cita.existsDuplicate:', error);
       throw error;
     }
   },

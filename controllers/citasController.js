@@ -11,6 +11,7 @@ const Paciente = require('../models/Paciente');
 const createCita = async (req, res) => {
   try {
     const { propietarios_cedula, pacientes_id_mascota, fecha_cita, hora_cita, descripcion, sede } = req.body;
+    const horaNormalizada = hora_cita.length === 5 ? `${hora_cita}:00` : hora_cita;
 
     // Validar campos requeridos
     if (!propietarios_cedula || !pacientes_id_mascota || !fecha_cita || !hora_cita) {
@@ -58,11 +59,25 @@ const createCita = async (req, res) => {
     }
 
     // Verificar disponibilidad: máximo 2 citas por hora
-    const citasEnHora = await Cita.countByFechaHora(fecha_cita, hora_cita);
-    if (citasEnHora >= 2) {
+    const existeDuplicada = await Cita.existsDuplicate({
+      propietarios_cedula,
+      pacientes_id_mascota,
+      fecha_cita,
+      hora_cita: horaNormalizada
+    });
+
+    if (existeDuplicada) {
       return res.status(400).json({
         success: false,
-        message: 'Ya hay 2 citas agendadas para esa hora. Por favor seleccione otro horario.'
+        message: 'Ya existe una cita con la misma información para esa fecha y hora'
+      });
+    }
+
+    const citasEnHora = await Cita.countByFechaHora(fecha_cita, horaNormalizada);
+    if (citasEnHora >= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ese horario ya no está disponible. Por favor seleccione otro horario.'
       });
     }
 
@@ -80,7 +95,7 @@ const createCita = async (req, res) => {
       propietarios_cedula,
       pacientes_id_mascota,
       fecha_cita,
-      hora_cita,
+      hora_cita: horaNormalizada,
       descripcion,
       sede: sede || 'Patitas Felices Alajuela',
       estado: 'pendiente'
@@ -242,20 +257,28 @@ const getHorariosDisponibles = async (req, res) => {
     // Obtener todas las citas del día
     const citasDelDia = await Cita.findByFecha(fecha);
 
+    const fechaHoy = hoy.toISOString().split('T')[0];
+    const esHoy = fecha === fechaHoy;
+    const horaActual = hoy.getHours();
+
     // Generar horarios disponibles (de 9:00 AM a 6:00 PM, cada hora)
     const horarios = [];
     for (let hora = 9; hora <= 18; hora++) {
+      if (esHoy && hora <= horaActual) {
+        continue;
+      }
+
       const horaString = `${hora.toString().padStart(2, '0')}:00:00`;
       
       // Contar cuántas citas hay en esta hora
       const citasEnHora = citasDelDia.filter(cita => cita.hora_cita === horaString).length;
       
-      // Si hay menos de 2 citas, el horario está disponible
-      if (citasEnHora < 2) {
+      // Si no hay citas, el horario está disponible
+      if (citasEnHora < 1) {
         horarios.push({
           hora: horaString,
           disponible: true,
-          espacios_disponibles: 2 - citasEnHora
+          espacios_disponibles: 1 - citasEnHora
         });
       }
     }
@@ -282,7 +305,15 @@ const getHorariosDisponibles = async (req, res) => {
 const updateCita = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
+
+    if (updateData.hora_cita && updateData.hora_cita.length === 5) {
+      updateData.hora_cita = `${updateData.hora_cita}:00`;
+    }
+
+    if (updateData.estado === 'realizada') {
+      updateData.estado = 'completada';
+    }
 
     // Verificar que la cita existe
     const citaExiste = await Cita.findById(id);
@@ -294,7 +325,7 @@ const updateCita = async (req, res) => {
     }
 
     // Si se está cambiando el propietario, verificar que existe
-    if (updateData.propietarios_cedula && updateData.propietarios_cedula !== citaExiste.propietarios_cedula) {
+    if (updateData.propietarios_cedula && Number(updateData.propietarios_cedula) !== Number(citaExiste.propietarios_cedula)) {
       const propietarioExiste = await Propietario.findByCedula(updateData.propietarios_cedula);
       if (!propietarioExiste) {
         return res.status(404).json({
@@ -305,7 +336,7 @@ const updateCita = async (req, res) => {
     }
 
     // Si se está cambiando la mascota, verificar que existe
-    if (updateData.pacientes_id_mascota && updateData.pacientes_id_mascota !== citaExiste.pacientes_id_mascota) {
+    if (updateData.pacientes_id_mascota && Number(updateData.pacientes_id_mascota) !== Number(citaExiste.pacientes_id_mascota)) {
       const mascotaExiste = await Paciente.findById(updateData.pacientes_id_mascota);
       if (!mascotaExiste) {
         return res.status(404).json({
@@ -315,10 +346,41 @@ const updateCita = async (req, res) => {
       }
     }
 
+    const propietarioFinal = updateData.propietarios_cedula || citaExiste.propietarios_cedula;
+    const mascotaFinal = updateData.pacientes_id_mascota || citaExiste.pacientes_id_mascota;
+    const fechaFinal = updateData.fecha_cita || citaExiste.fecha_cita;
+    const horaFinal = updateData.hora_cita || citaExiste.hora_cita;
+
+    const mascotaFinalInfo = await Paciente.findById(mascotaFinal);
+    if (!mascotaFinalInfo || Number(mascotaFinalInfo.propietarios_cedula) !== Number(propietarioFinal)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La mascota no pertenece al propietario seleccionado'
+      });
+    }
+
+    const existeDuplicada = await Cita.existsDuplicate(
+      {
+        propietarios_cedula: propietarioFinal,
+        pacientes_id_mascota: mascotaFinal,
+        fecha_cita: fechaFinal,
+        hora_cita: horaFinal
+      },
+      null,
+      id
+    );
+
+    if (existeDuplicada) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ya existe una cita con la misma información para esa fecha y hora'
+      });
+    }
+
     // Si se está cambiando la fecha/hora, validar disponibilidad
     if (updateData.fecha_cita || updateData.hora_cita) {
-      const nuevaFecha = updateData.fecha_cita || citaExiste.fecha_cita;
-      const nuevaHora = updateData.hora_cita || citaExiste.hora_cita;
+      const nuevaFecha = fechaFinal;
+      const nuevaHora = horaFinal;
 
       // Validar que no sea una fecha pasada
       const fechaCita = new Date(nuevaFecha);
@@ -334,15 +396,15 @@ const updateCita = async (req, res) => {
 
       // Solo validar si cambió la fecha u hora
       if (nuevaFecha !== citaExiste.fecha_cita || nuevaHora !== citaExiste.hora_cita) {
-        const citasEnHora = await Cita.countByFechaHora(nuevaFecha, nuevaHora);
-        if (citasEnHora >= 2) {
+        const citasEnHora = await Cita.countByFechaHora(nuevaFecha, nuevaHora, null, id);
+        if (citasEnHora >= 1) {
           return res.status(400).json({
             success: false,
-            message: 'Ya hay 2 citas agendadas para esa hora'
+            message: 'Ese horario ya no está disponible'
           });
         }
 
-        const citasEnDia = await Cita.countByFecha(nuevaFecha);
+        const citasEnDia = await Cita.countByFecha(nuevaFecha, null, id);
         if (citasEnDia >= 12) {
           return res.status(400).json({
             success: false,
