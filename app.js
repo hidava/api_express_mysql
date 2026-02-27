@@ -176,7 +176,7 @@ apiRouter.get('/', (req, res) => {
     res.status(200).json({
         success: true,
         message: 'Bienvenido a la API v1.0',
-        version: '1.0.2',
+        version: '1.0.3',
         availableModules: {
             auth: `/auth`,
             users: `/users`,
