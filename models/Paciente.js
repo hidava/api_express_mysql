@@ -140,6 +140,14 @@ const Paciente = {
   async delete(id, connection = null) {
     try {
       const executor = connection || getDB();
+      
+      // Primero eliminamos el historial médico asociado
+      await executor.execute(
+        'DELETE FROM historial_medico WHERE pacientes_id_mascota = ?',
+        [id]
+      );
+      
+      // Luego eliminamos el paciente
       const [result] = await executor.execute(
         'DELETE FROM pacientes WHERE id_mascota = ?',
         [id]
