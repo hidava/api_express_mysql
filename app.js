@@ -46,6 +46,7 @@ const pacientesRoutes = require('./routes/pacientesRoutes');
 const historialMedicoRoutes = require('./routes/historialMedicoRoutes');
 const vacunacionRoutes = require('./routes/vacunacionRoutes');
 const desparacitacionRoutes = require('./routes/desparacitacionRoutes');
+const citasRoutes = require('./routes/citasRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -185,7 +186,8 @@ apiRouter.get('/', (req, res) => {
             pacientes: `/pacientes`,
             historialMedico: `/historial-medico`,
             vacunacion: `/vacunacion`,
-            desparacitacion: `/desparacitacion`
+            desparacitacion: `/desparacitacion`,
+            citas: `/citas`
         },
         documentation: '/docs'
     });
@@ -199,6 +201,7 @@ apiRouter.use('/pacientes', pacientesRoutes);
 apiRouter.use('/historial-medico', historialMedicoRoutes);
 apiRouter.use('/vacunacion', vacunacionRoutes);
 apiRouter.use('/desparacitacion', desparacitacionRoutes);
+apiRouter.use('/citas', citasRoutes);
 
 
 // 3. Montar el apiRouter en el prefijo principal
