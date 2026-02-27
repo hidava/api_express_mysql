@@ -21,7 +21,7 @@ const createCita = async (req, res) => {
     }
 
     // Verificar que el propietario existe
-    const propietarioExiste = await Propietario.findById(propietarios_cedula);
+    const propietarioExiste = await Propietario.findByCedula(propietarios_cedula);
     if (!propietarioExiste) {
       return res.status(404).json({
         success: false,
@@ -38,7 +38,7 @@ const createCita = async (req, res) => {
       });
     }
 
-    if (mascotaExiste.propietarios_cedula !== propietarios_cedula) {
+    if (Number(mascotaExiste.propietarios_cedula) !== Number(propietarios_cedula)) {
       return res.status(400).json({
         success: false,
         message: 'La mascota no pertenece a ese propietario'
@@ -295,7 +295,7 @@ const updateCita = async (req, res) => {
 
     // Si se está cambiando el propietario, verificar que existe
     if (updateData.propietarios_cedula && updateData.propietarios_cedula !== citaExiste.propietarios_cedula) {
-      const propietarioExiste = await Propietario.findById(updateData.propietarios_cedula);
+      const propietarioExiste = await Propietario.findByCedula(updateData.propietarios_cedula);
       if (!propietarioExiste) {
         return res.status(404).json({
           success: false,
