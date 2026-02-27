@@ -304,6 +304,27 @@ RENDIMIENTO:
 */
 
 -- ===================================================================
+-- TABLA: vacunacion
+-- ===================================================================
+-- Descripción: Registro de vacunaciones de pacientes
+-- ===================================================================
+
+DROP TABLE IF EXISTS vacunacion;
+
+CREATE TABLE vacunacion (
+    id_vacunacion INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_vacuna VARCHAR(150) NOT NULL,
+    fecha_aplicacion DATE NOT NULL,
+    proxima_dosis DATE,
+    pacientes_id_mascota INT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_paciente_vacunacion FOREIGN KEY (pacientes_id_mascota) REFERENCES pacientes(id_mascota) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_paciente_vacunacion (pacientes_id_mascota),
+    INDEX idx_fecha_aplicacion (fecha_aplicacion)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ===================================================================
 -- FIN DEL SCRIPT
 -- ===================================================================
 
