@@ -5,6 +5,15 @@ const Cita = require('../models/Cita');
 const Propietario = require('../models/Propietario');
 const Paciente = require('../models/Paciente');
 
+const getNowCostaRica = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Costa_Rica' }));
+
+const formatDateYYYYMMDD = (date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 /**
  * Crea una nueva cita
  */
@@ -48,7 +57,7 @@ const createCita = async (req, res) => {
 
     // Validar que no sea una fecha pasada
     const fechaCita = new Date(fecha_cita);
-    const hoy = new Date();
+    const hoy = getNowCostaRica();
     hoy.setHours(0, 0, 0, 0);
     
     if (fechaCita < hoy) {
@@ -234,7 +243,7 @@ const getHorariosDisponibles = async (req, res) => {
 
     // Validar que no sea una fecha pasada
     const fechaCita = new Date(fecha);
-    const hoy = new Date();
+    const hoy = getNowCostaRica();
     hoy.setHours(0, 0, 0, 0);
     
     if (fechaCita < hoy) {
@@ -257,7 +266,7 @@ const getHorariosDisponibles = async (req, res) => {
     // Obtener todas las citas del día
     const citasDelDia = await Cita.findByFecha(fecha);
 
-    const fechaHoy = hoy.toISOString().split('T')[0];
+    const fechaHoy = formatDateYYYYMMDD(hoy);
     const esHoy = fecha === fechaHoy;
     const horaActual = hoy.getHours();
 
@@ -384,7 +393,7 @@ const updateCita = async (req, res) => {
 
       // Validar que no sea una fecha pasada
       const fechaCita = new Date(nuevaFecha);
-      const hoy = new Date();
+      const hoy = getNowCostaRica();
       hoy.setHours(0, 0, 0, 0);
       
       if (fechaCita < hoy) {
